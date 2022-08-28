@@ -16,7 +16,6 @@ package trace // import "go.opentelemetry.io/otel/sdk/trace"
 
 import (
 	"context"
-	rt "runtime/trace"
 
 	"go.opentelemetry.io/otel/trace"
 
@@ -62,13 +61,9 @@ func (tr *tracer) Start(ctx context.Context, name string, options ...trace.SpanO
 	}
 
 	ctx, span.executionTracerTaskEnd = func(ctx context.Context) (context.Context, func()) {
-		if !rt.IsEnabled() {
-			// Avoid additional overhead if
-			// runtime/trace is not enabled.
-			return ctx, func() {}
-		}
-		nctx, task := rt.NewTask(ctx, name)
-		return nctx, task.End
+		// Avoid additional overhead if
+		// runtime/trace is not enabled.
+		return ctx, func() {}
 	}(ctx)
 
 	return trace.ContextWithSpan(ctx, span), span
